@@ -15,6 +15,7 @@ interface HeaderProps {
 
 export const Header = ({ userName, userRole, onLogout, employee }: HeaderProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const initials = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   return (
@@ -36,17 +37,26 @@ export const Header = ({ userName, userRole, onLogout, employee }: HeaderProps) 
               <p className="text-xs text-muted-foreground">{userRole}</p>
             </div>
             
-            <DropdownMenu>
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <div 
+                  className="flex items-center gap-4 cursor-pointer"
+                  onMouseEnter={() => setIsDropdownOpen(true)}
+                  onMouseLeave={() => setIsDropdownOpen(false)}
+                >
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                </Button>
+                </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent 
+                align="end" 
+                className="w-56 bg-popover"
+                onMouseEnter={() => setIsDropdownOpen(true)}
+                onMouseLeave={() => setIsDropdownOpen(false)}
+              >
                 {employee && (
                   <>
                     <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
