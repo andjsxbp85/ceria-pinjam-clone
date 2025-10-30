@@ -1,38 +1,28 @@
-import { LoanStatus, AssetStatus } from '@/types';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
-  status: LoanStatus | AssetStatus;
+  status: string;
   className?: string;
 }
 
-export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
-  const getStatusStyles = () => {
-    switch (status) {
-      case 'Tersedia':
-        return 'bg-[hsl(var(--status-available-bg))] text-[hsl(var(--status-available))]';
-      case 'Dipinjam':
-        return 'bg-[hsl(var(--status-on-loan-bg))] text-[hsl(var(--status-on-loan))]';
-      case 'Menunggu Persetujuan':
-        return 'bg-[hsl(var(--status-pending-bg))] text-[hsl(var(--status-pending))]';
-      case 'Disetujui':
-        return 'bg-[hsl(var(--status-approved-bg))] text-[hsl(var(--status-approved))]';
-      case 'Ditolak':
-        return 'bg-[hsl(var(--status-rejected-bg))] text-[hsl(var(--status-rejected))]';
-      case 'Dikembalikan':
-        return 'bg-[hsl(var(--status-returned-bg))] text-[hsl(var(--status-returned))]';
-      case 'Maintenance':
-        return 'bg-muted text-muted-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
+const statusStyles: Record<string, string> = {
+  'Tersedia': 'bg-success-light text-success border-success/20',
+  'Dipinjam': 'bg-warning-light text-warning border-warning/20',
+  'Maintenance': 'bg-muted text-muted-foreground border-border',
+  'Menunggu Persetujuan': 'bg-pending-light text-pending border-pending/20',
+  'Disetujui': 'bg-info-light text-info border-info/20',
+  'Ditolak': 'bg-destructive/10 text-destructive border-destructive/20',
+  'Dikembalikan': 'bg-muted text-muted-foreground border-border',
+  'Dibatalkan': 'bg-muted text-muted-foreground border-border',
+  'Disembunyikan': 'bg-muted text-muted-foreground border-border',
+};
 
+export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold',
-        getStatusStyles(),
+        "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border",
+        statusStyles[status] || 'bg-muted text-muted-foreground',
         className
       )}
     >

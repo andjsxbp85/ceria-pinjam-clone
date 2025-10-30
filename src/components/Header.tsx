@@ -1,39 +1,78 @@
-import { Building2, LogOut, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { UserRole } from '@/types';
+import { Building2, LogOut, User, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState } from "react";
+import { ProfileDialog } from "./ProfileDialog";
+import { Employee } from "@/data/sampleData";
 
 interface HeaderProps {
-  userRole: UserRole;
   userName: string;
+  userRole: string;
   onLogout: () => void;
+  employee?: Employee | null;
 }
 
-export const Header = ({ userRole, userName, onLogout }: HeaderProps) => {
+export const Header = ({ userName, userRole, onLogout, employee }: HeaderProps) => {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const initials = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Building2 className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-lg font-bold text-foreground">Sistem Peminjaman BMN</h1>
-            <p className="text-xs text-muted-foreground">Pusat Pengembangan Talenta Digital</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4 text-muted-foreground" />
+    <>
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary p-2 rounded-lg">
+              <Building2 className="h-6 w-6 text-primary-foreground" />
+            </div>
             <div>
-              <p className="font-medium">{userName}</p>
-              <p className="text-xs text-muted-foreground capitalize">{userRole}</p>
+              <h1 className="text-lg font-bold text-foreground">Sistem Peminjaman BMN</h1>
+              <p className="text-xs text-muted-foreground">Pusat Pengembangan Talenta Digital</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={onLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Keluar
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-medium text-foreground">{userName}</p>
+              <p className="text-xs text-muted-foreground">{userRole}</p>
+            </div>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {employee && (
+                  <>
+                    <DropdownMenuItem onClick={() => setIsProfileOpen(true)}>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Pengaturan Akun
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem onClick={onLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Keluar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+      
+      {employee && (
+        <ProfileDialog 
+          open={isProfileOpen} 
+          onOpenChange={setIsProfileOpen}
+          employee={employee}
+        />
+      )}
+    </>
   );
 };

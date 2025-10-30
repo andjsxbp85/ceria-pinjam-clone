@@ -1,66 +1,83 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Login from './Login';
-import EmployeeDashboard from './EmployeeDashboard';
-import AdminDashboard from './AdminDashboard';
-import AssetCatalog from './AssetCatalog';
-import LoanRequest from './LoanRequest';
-import MyLoans from './MyLoans';
-import LoanManagement from './LoanManagement';
-import { Header } from '@/components/Header';
-import { Button } from '@/components/ui/button';
-import { UserRole, Asset, Loan, Employee } from '@/types';
-import { employees, initialAssets, initialLoans } from '@/data/mockData';
+import { useState, useEffect } from "react";
+import Login from "./Login";
+import EmployeeDashboard from "./EmployeeDashboard";
+import AdminDashboard from "./AdminDashboard";
+import { employees, assets as initialAssets, initialLoans, Employee, Asset, Loan } from "@/data/sampleData";
 
-type Page = 'dashboard' | 'assets' | 'loan-request' | 'my-loans' | 'loan-management';
+const STORAGE_KEY = 'bmn_session';
 
 const Index = () => {
-  const navigate = useNavigate();
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
+  const [userRole, setUserRole] = useState<'employee' | 'admin' | null>(null);
+  const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
   const [assets, setAssets] = useState<Asset[]>(initialAssets);
   const [loans, setLoans] = useState<Loan[]>(initialLoans);
-  const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>();
 
-  // For demo, use first employee
-  const currentEmployee = employees[0];
+  // Load session from localStorage on mount
+  useEffect(() => {
+    const savedSession = localStorage.getItem(STORAGE_KEY);
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        setUserRole(session.userRole);
+        setCurrentEmployee(session.currentEmployee);
+      } catch (error) {
+        console.error('Failed to restore session:', error);
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, []);
 
-  const handleLogin = (role: UserRole) => {
+  const handleLogin = (role: 'employee' | 'admin', employee?: Employee) => {
     setUserRole(role);
-    setCurrentPage('dashboard');
+    if (employee) {
+      setCurrentEmployee(employee);
+    }
+    
+    // Save session to localStorage
+    const session = {
+      userRole: role,
+      currentEmployee: employee || null
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
   };
 
   const handleLogout = () => {
     setUserRole(null);
-    setCurrentPage('dashboard');
+    setCurrentEmployee(null);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
-  const handleBorrowAsset = (asset: Asset) => {
-    setSelectedAsset(asset);
-    setCurrentPage('loan-request');
-  };
-
-  const handleSubmitLoan = (loan: Omit<Loan, 'id'>) => {
+  const handleSubmitLoan = (loanData: Omit<Loan, 'id' | 'status' | 'requestDate'>) => {
     const newLoan: Loan = {
-      ...loan,
-      id: `L${(loans.length + 1).toString().padStart(3, '0')}`,
+      ...loanData,
+      id: `L${String(loans.length + 1).padStart(3, '0')}`,
+      status: 'Menunggu Persetujuan',
+      requestDate: new Date().toISOString().split('T')[0],
     };
     setLoans([...loans, newLoan]);
+  };
+
+  const handleCancelLoan = (loanId: string) => {
+    setLoans(loans.map(loan =>
+      loan.id === loanId
+        ? { ...loan, status: 'Dibatalkan' as const }
+        : loan
+    ));
   };
 
   const handleApproveLoan = (loanId: string) => {
     setLoans(loans.map(loan => {
       if (loan.id === loanId) {
-        // Update asset status
+        // Update asset status to borrowed using asset ID
         setAssets(assets.map(asset =>
-          asset.code === loan.assetCode
-            ? { ...asset, status: 'Dipinjam' }
+          asset.id === loan.assetId
+            ? { ...asset, status: 'Dipinjam' as const }
             : asset
         ));
-
+        
         return {
           ...loan,
-          status: 'Disetujui',
+          status: 'Disetujui' as const,
           approvedBy: 'Admin BMN',
           approvedDate: new Date().toISOString().split('T')[0],
         };
@@ -72,134 +89,103 @@ const Index = () => {
   const handleRejectLoan = (loanId: string) => {
     setLoans(loans.map(loan =>
       loan.id === loanId
-        ? { ...loan, status: 'Ditolak' }
+        ? { ...loan, status: 'Ditolak' as const }
         : loan
     ));
   };
 
-  const handleRecordReturn = (loanId: string) => {
+  const handleReturnAsset = (loanId: string, returnData?: {
+    returnDate: Date;
+    condition: string;
+    photoFile: File | null;
+    notes: string;
+    documentFile: File | null;
+  }) => {
     setLoans(loans.map(loan => {
       if (loan.id === loanId) {
-        // Update asset status
+        // Update asset status back to available using asset ID
         setAssets(assets.map(asset =>
-          asset.code === loan.assetCode
-            ? { ...asset, status: 'Tersedia' }
+          asset.id === loan.assetId
+            ? { ...asset, status: 'Tersedia' as const }
             : asset
         ));
-
+        
         return {
           ...loan,
-          status: 'Dikembalikan',
-          returnDate: new Date().toISOString().split('T')[0],
+          status: 'Dikembalikan' as const,
+          returnedDate: returnData?.returnDate.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+          returnCondition: returnData?.condition,
+          returnPhotoUrl: returnData?.photoFile ? URL.createObjectURL(returnData.photoFile) : undefined,
+          returnNotes: returnData?.notes,
+          returnDocumentUrl: returnData?.documentFile ? URL.createObjectURL(returnData.documentFile) : undefined,
         };
       }
       return loan;
     }));
   };
 
+  const handleAddAsset = (assetData: Omit<Asset, 'id'>) => {
+    const maxId = assets.length > 0 ? Math.max(...assets.map(a => a.id)) : 0;
+    const newAsset: Asset = {
+      ...assetData,
+      id: maxId + 1,
+    };
+    setAssets([...assets, newAsset]);
+  };
+
+  const handleEditAsset = (updatedAsset: Asset) => {
+    setAssets(assets.map(asset => 
+      asset.id === updatedAsset.id ? updatedAsset : asset
+    ));
+  };
+
+  const handleDeleteAsset = (assetId: number) => {
+    setAssets(assets.filter(asset => asset.id !== assetId));
+  };
+
+  const handleHideAsset = (assetId: number) => {
+    setAssets(assets.map(asset =>
+      asset.id === assetId
+        ? { ...asset, status: 'Disembunyikan' as const }
+        : asset
+    ));
+  };
+
   if (!userRole) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={handleLogin} employees={employees} />;
   }
 
-  const getPageContent = () => {
-    switch (currentPage) {
-      case 'dashboard':
-        return userRole === 'employee' ? (
-          <EmployeeDashboard
-            assets={assets}
-            loans={loans}
-            currentEmployee={currentEmployee.name}
-          />
-        ) : (
-          <AdminDashboard assets={assets} loans={loans} />
-        );
-      case 'assets':
-        return (
-          <AssetCatalog
-            assets={assets}
-            onBorrow={userRole === 'employee' ? handleBorrowAsset : undefined}
-            showBorrowButton={userRole === 'employee'}
-          />
-        );
-      case 'loan-request':
-        return (
-          <LoanRequest
-            employee={currentEmployee}
-            assets={assets}
-            selectedAsset={selectedAsset}
-            onSubmit={handleSubmitLoan}
-          />
-        );
-      case 'my-loans':
-        return <MyLoans loans={loans} currentEmployee={currentEmployee.name} />;
-      case 'loan-management':
-        return (
-          <LoanManagement
-            loans={loans}
-            assets={assets}
-            onApproveLoan={handleApproveLoan}
-            onRejectLoan={handleRejectLoan}
-            onRecordReturn={handleRecordReturn}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getNavItems = () => {
-    if (userRole === 'employee') {
-      return [
-        { id: 'dashboard' as Page, label: 'Dashboard' },
-        { id: 'assets' as Page, label: 'Daftar BMN' },
-        { id: 'my-loans' as Page, label: 'Peminjaman Saya' },
-      ];
-    } else {
-      return [
-        { id: 'dashboard' as Page, label: 'Dashboard' },
-        { id: 'assets' as Page, label: 'Daftar BMN' },
-        { id: 'loan-management' as Page, label: 'Kelola Peminjaman' },
-      ];
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Header
-        userRole={userRole}
-        userName={currentEmployee.name}
+  if (userRole === 'employee' && currentEmployee) {
+    return (
+      <EmployeeDashboard
+        employee={currentEmployee}
+        assets={assets}
+        loans={loans}
         onLogout={handleLogout}
+        onSubmitLoan={handleSubmitLoan}
+        onCancelLoan={handleCancelLoan}
       />
+    );
+  }
 
-      <div className="border-b bg-background/95 backdrop-blur">
-        <div className="container">
-          <nav className="flex gap-2 overflow-x-auto py-2">
-            {getNavItems().map((item) => (
-              <Button
-                key={item.id}
-                variant={currentPage === item.id ? 'default' : 'ghost'}
-                onClick={() => setCurrentPage(item.id)}
-                className="whitespace-nowrap"
-              >
-                {item.label}
-              </Button>
-            ))}
-          </nav>
-        </div>
-      </div>
+  if (userRole === 'admin') {
+    return (
+      <AdminDashboard
+        assets={assets}
+        loans={loans}
+        onLogout={handleLogout}
+        onApproveLoan={handleApproveLoan}
+        onRejectLoan={handleRejectLoan}
+        onReturnAsset={handleReturnAsset}
+        onAddAsset={handleAddAsset}
+        onEditAsset={handleEditAsset}
+        onDeleteAsset={handleDeleteAsset}
+        onHideAsset={handleHideAsset}
+      />
+    );
+  }
 
-      <main className="container py-6">
-        {getPageContent()}
-      </main>
-
-      <footer className="border-t bg-muted/30 mt-12">
-        <div className="container py-6 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 Badan Pengembangan SDM Komdig</p>
-          <p className="mt-1">Sistem Peminjaman BMN - Pusat Pengembangan Talenta Digital</p>
-        </div>
-      </footer>
-    </div>
-  );
+  return null;
 };
 
 export default Index;
