@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Package, CheckCircle, Clock, Search, Calendar, Eye } from "lucide-react";
-import { Asset, Employee, Loan } from "@/data/sampleData";
+import { Asset, Employee, Loan, Notification } from "@/data/sampleData";
 import { toast } from "sonner";
 
 interface EmployeeDashboardProps {
@@ -19,14 +19,17 @@ interface EmployeeDashboardProps {
   onLogout: () => void;
   onSubmitLoan: (loan: Omit<Loan, 'id' | 'status' | 'requestDate'>) => void;
   onCancelLoan: (loanId: string) => void;
+  notifications?: Notification[];
+  onNotificationClick?: (notificationId: string) => void;
 }
 
-const EmployeeDashboard = ({ employee, assets, loans, onLogout, onSubmitLoan, onCancelLoan }: EmployeeDashboardProps) => {
+const EmployeeDashboard = ({ employee, assets, loans, onLogout, onSubmitLoan, onCancelLoan, notifications, onNotificationClick }: EmployeeDashboardProps) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'assets' | 'myLoans' | 'request'>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [detailAsset, setDetailAsset] = useState<Asset | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [showAllAssets, setShowAllAssets] = useState(false);
   const [loanForm, setLoanForm] = useState({
     purpose: '',
     startDate: '',
@@ -79,7 +82,14 @@ const EmployeeDashboard = ({ employee, assets, loans, onLogout, onSubmitLoan, on
 
   return (
     <div className="min-h-screen bg-background">
-      <Header userName={employee.name} userRole="Pegawai" onLogout={onLogout} employee={employee} />
+      <Header 
+        userName={employee.name} 
+        userRole="Pegawai" 
+        onLogout={onLogout} 
+        employee={employee}
+        notifications={notifications}
+        onNotificationClick={onNotificationClick}
+      />
       
       {/* Navigation Tabs */}
       <div className="border-b border-border bg-card">
@@ -150,7 +160,7 @@ const EmployeeDashboard = ({ employee, assets, loans, onLogout, onSubmitLoan, on
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredAssets.map((asset) => (
+              {(showAllAssets ? filteredAssets : filteredAssets.slice(0, 12)).map((asset) => (
                 <AssetCard
                   key={asset.id}
                   asset={asset}
@@ -160,6 +170,17 @@ const EmployeeDashboard = ({ employee, assets, loans, onLogout, onSubmitLoan, on
                 />
               ))}
             </div>
+            {filteredAssets.length > 12 && (
+              <div className="flex justify-center mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllAssets(!showAllAssets)}
+                  className="min-w-[200px]"
+                >
+                  {showAllAssets ? 'Show Less' : 'Show More'}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

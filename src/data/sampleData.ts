@@ -25,6 +25,7 @@ export interface Asset {
   location: string;
   description: string;
   imageUrls?: string[];
+  currentUser?: string;
 }
 
 export interface Loan {
@@ -50,6 +51,17 @@ export interface Loan {
   returnDocumentUrl?: string;
 }
 
+export interface Notification {
+  id: string;
+  type: 'loan_request' | 'loan_approved' | 'loan_rejected';
+  title: string;
+  message: string;
+  loanId: string;
+  employeeNip: string;
+  read: boolean;
+  createdAt: string;
+}
+
 export const employees: Employee[] = employeesData.map(emp => ({
   nip: emp.nip,
   name: emp.name,
@@ -59,8 +71,13 @@ export const employees: Employee[] = employeesData.map(emp => ({
   email: emp.email
 }));
 
-export const assets: Asset[] = [
-  // Data dari Excel - Laptop & Notebook
+// Helper function to extract user from description
+const extractUser = (desc: string): { cleanDesc: string; user?: string } => {
+  const match = desc.match(/^(.+?)\s*-\s*Pengguna:\s*(.+)$/);
+  return match ? { cleanDesc: match[1].trim(), user: match[2] } : { cleanDesc: desc };
+};
+
+const rawAssets = [
   { id: 1, code: '3100102001-54', name: 'Asus All in One v241fft', category: 'MESIN PERALATAN KHUSUS TIK', condition: 'Baik', status: 'Tersedia', location: 'Intra', description: 'P.C Unit', imageUrls: [asusLaptopImg] },
   { id: 2, code: '3100102001-55', name: 'Asus All in One v241fft', category: 'MESIN PERALATAN KHUSUS TIK', condition: 'Baik', status: 'Tersedia', location: 'Intra', description: 'P.C Unit', imageUrls: [asusLaptopImg] },
   { id: 3, code: '3100102002-4', name: 'HP Envy X2 11-G015T', category: 'MESIN PERALATAN KHUSUS TIK', condition: 'Baik', status: 'Tersedia', location: 'Intra', description: 'Lap Top', imageUrls: [hpLaptopImg] },
@@ -158,39 +175,27 @@ export const assets: Asset[] = [
   { id: 93, code: '3050201005-2', name: 'Inviti sofa 1 seater', category: 'MESIN PERALATAN NON TIK', condition: 'Baik', status: 'Tersedia', location: 'Intra', description: 'Sice' },
   { id: 94, code: '3050201005-3', name: 'Inviti Sofa Bed Ka Pus', category: 'MESIN PERALATAN NON TIK', condition: 'Baik', status: 'Tersedia', location: 'Intra', description: 'Sice' },
   { id: 95, code: '3050201005-4', name: 'Inviti sofa 2 seater', category: 'MESIN PERALATAN NON TIK', condition: 'Baik', status: 'Tersedia', location: 'Intra', description: 'Sice' }
-];
+] as const;
+
+export const assets: Asset[] = rawAssets.map(a => {
+  const { cleanDesc, user } = extractUser(a.description);
+  return { ...a, description: cleanDesc, currentUser: user, status: a.status as Asset['status'] };
+});
 
 export const initialLoans: Loan[] = [
   {
     id: 'L001',
-    employeeName: 'Arman Tony Aritonang',
-    employeeNip: '199703062025041002',
-    employeeEmail: 'arma001@komdigi.go.id',
-    employeePhone: '081385933210',
-    assetId: 39,
-    assetName: 'Lenovo Slim 7',
-    assetCode: '3100102003-51',
-    purpose: 'Pengembangan sistem monitoring BMN',
-    startDate: '2025-10-28',
-    endDate: '2025-11-10',
+    employeeName: 'Yayat Suryatna',
+    employeeNip: '198212155790',
+    assetId: 10,
+    assetName: 'Dynabook Tecra A40-G',
+    assetCode: 'RPT-PRJ-003',
+    purpose: 'Presentasi Training Digital Talent',
+    startDate: '2025-10-25',
+    endDate: '2025-10-30',
     status: 'Disetujui',
-    requestDate: '2025-10-27',
+    requestDate: '2025-10-24',
     approvedBy: 'Admin BMN',
-    approvedDate: '2025-10-27'
-  },
-  {
-    id: 'L002',
-    employeeName: 'Arman Tony Aritonang',
-    employeeNip: '199703062025041002',
-    employeeEmail: 'arma001@komdigi.go.id',
-    employeePhone: '081385933210',
-    assetId: 76,
-    assetName: 'Viewsonic',
-    assetCode: '3050105048-8',
-    purpose: 'Presentasi project review bulanan',
-    startDate: '2025-10-30',
-    endDate: '2025-11-05',
-    status: 'Menunggu Persetujuan',
-    requestDate: '2025-10-29'
+    approvedDate: '2025-10-24'
   }
 ];

@@ -21,15 +21,22 @@ export const LoanCard = ({ loan, asset, onCancel }: LoanCardProps) => {
 
   return (
     <div className="bg-card rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow duration-200 animate-fade-in">
-      {asset?.imageUrls && asset.imageUrls.length > 0 && (
-        <div className="mb-4 rounded-lg overflow-hidden">
+      <div className="mb-4 rounded-lg overflow-hidden bg-muted/30">
+        {asset?.imageUrls && asset.imageUrls.length > 0 ? (
           <img 
             src={asset.imageUrls[0]} 
             alt={loan.assetName}
             className="w-full h-48 object-cover"
           />
-        </div>
-      )}
+        ) : (
+          <div className="w-full h-48 flex items-center justify-center bg-muted/50">
+            <div className="text-center">
+              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No Image</p>
+            </div>
+          </div>
+        )}
+      </div>
       
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">

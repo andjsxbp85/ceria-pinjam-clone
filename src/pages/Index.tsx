@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Login from "./Login";
 import EmployeeDashboard from "./EmployeeDashboard";
 import AdminDashboard from "./AdminDashboard";
-import { employees, assets as initialAssets, initialLoans, Employee, Asset, Loan } from "@/data/sampleData";
+import { employees, assets as initialAssets, initialLoans, Employee, Asset, Loan, Notification } from "@/data/sampleData";
 
 const STORAGE_KEY = 'bmn_session';
 
@@ -11,6 +11,7 @@ const Index = () => {
   const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
   const [assets, setAssets] = useState<Asset[]>(initialAssets);
   const [loans, setLoans] = useState<Loan[]>(initialLoans);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Load session from localStorage on mount
   useEffect(() => {
@@ -55,6 +56,19 @@ const Index = () => {
       requestDate: new Date().toISOString().split('T')[0],
     };
     setLoans([...loans, newLoan]);
+    
+    // Create notification for admin
+    const newNotification: Notification = {
+      id: `N${Date.now()}`,
+      type: 'loan_request',
+      title: 'Permohonan Pinjaman Baru',
+      message: `${loanData.employeeName} mengajukan peminjaman ${loanData.assetName} untuk ${loanData.purpose}`,
+      loanId: newLoan.id,
+      employeeNip: 'admin',
+      read: false,
+      createdAt: new Date().toISOString(),
+    };
+    setNotifications([...notifications, newNotification]);
   };
 
   const handleCancelLoan = (loanId: string) => {
@@ -66,32 +80,66 @@ const Index = () => {
   };
 
   const handleApproveLoan = (loanId: string) => {
-    setLoans(loans.map(loan => {
-      if (loan.id === loanId) {
+    const loan = loans.find(l => l.id === loanId);
+    
+    setLoans(loans.map(l => {
+      if (l.id === loanId) {
         // Update asset status to borrowed using asset ID
         setAssets(assets.map(asset =>
-          asset.id === loan.assetId
-            ? { ...asset, status: 'Dipinjam' as const }
+          asset.id === l.assetId
+            ? { ...asset, status: 'Dipinjam' as const, currentUser: l.employeeName }
             : asset
         ));
         
         return {
-          ...loan,
+          ...l,
           status: 'Disetujui' as const,
           approvedBy: 'Admin BMN',
           approvedDate: new Date().toISOString().split('T')[0],
         };
       }
-      return loan;
+      return l;
     }));
+    
+    // Create notification for employee
+    if (loan) {
+      const newNotification: Notification = {
+        id: `N${Date.now()}`,
+        type: 'loan_approved',
+        title: 'Permohonan Disetujui',
+        message: `Permohonan peminjaman ${loan.assetName} Anda telah disetujui`,
+        loanId: loan.id,
+        employeeNip: loan.employeeNip,
+        read: false,
+        createdAt: new Date().toISOString(),
+      };
+      setNotifications([...notifications, newNotification]);
+    }
   };
 
   const handleRejectLoan = (loanId: string) => {
-    setLoans(loans.map(loan =>
-      loan.id === loanId
-        ? { ...loan, status: 'Ditolak' as const }
-        : loan
+    const loan = loans.find(l => l.id === loanId);
+    
+    setLoans(loans.map(l =>
+      l.id === loanId
+        ? { ...l, status: 'Ditolak' as const }
+        : l
     ));
+    
+    // Create notification for employee
+    if (loan) {
+      const newNotification: Notification = {
+        id: `N${Date.now()}`,
+        type: 'loan_rejected',
+        title: 'Permohonan Ditolak',
+        message: `Permohonan peminjaman ${loan.assetName} Anda telah ditolak`,
+        loanId: loan.id,
+        employeeNip: loan.employeeNip,
+        read: false,
+        createdAt: new Date().toISOString(),
+      };
+      setNotifications([...notifications, newNotification]);
+    }
   };
 
   const handleReturnAsset = (loanId: string, returnData?: {
@@ -106,7 +154,7 @@ const Index = () => {
         // Update asset status back to available using asset ID
         setAssets(assets.map(asset =>
           asset.id === loan.assetId
-            ? { ...asset, status: 'Tersedia' as const }
+            ? { ...asset, status: 'Tersedia' as const, currentUser: undefined }
             : asset
         ));
         
@@ -151,6 +199,16 @@ const Index = () => {
     ));
   };
 
+  const handleNotificationClick = (notificationId: string) => {
+    setNotifications(notifications.map(n =>
+      n.id === notificationId ? { ...n, read: true } : n
+    ));
+  };
+
+  const currentUserNotifications = userRole === 'admin' 
+    ? notifications.filter(n => n.employeeNip === 'admin')
+    : notifications.filter(n => n.employeeNip === currentEmployee?.nip);
+
   if (!userRole) {
     return <Login onLogin={handleLogin} employees={employees} />;
   }
@@ -164,6 +222,8 @@ const Index = () => {
         onLogout={handleLogout}
         onSubmitLoan={handleSubmitLoan}
         onCancelLoan={handleCancelLoan}
+        notifications={currentUserNotifications}
+        onNotificationClick={handleNotificationClick}
       />
     );
   }
@@ -181,6 +241,8 @@ const Index = () => {
         onEditAsset={handleEditAsset}
         onDeleteAsset={handleDeleteAsset}
         onHideAsset={handleHideAsset}
+        notifications={currentUserNotifications}
+        onNotificationClick={handleNotificationClick}
       />
     );
   }

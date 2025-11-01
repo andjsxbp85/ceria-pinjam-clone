@@ -69,6 +69,17 @@ export const AssetCard = ({
       
       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{asset.description}</p>
       
+      {/* Pengguna field */}
+      <div className="mb-4">
+        <div className="flex items-center gap-2 text-sm">
+          <User className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <p className="text-xs text-muted-foreground">Pengguna</p>
+            <p className="font-medium text-foreground">{asset.currentUser || '-'}</p>
+          </div>
+        </div>
+      </div>
+      
       {borrowerInfo && asset.status === 'Dipinjam' && (
         <div className="bg-muted/50 rounded-lg p-3 mb-4">
           <div className="flex items-center gap-2 text-sm">

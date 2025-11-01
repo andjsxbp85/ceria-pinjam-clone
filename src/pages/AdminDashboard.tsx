@@ -3,7 +3,7 @@ import { StatsCard } from "@/components/StatsCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Package, CheckCircle, Clock, AlertCircle, Calendar, User, FileText, Plus, Search, Trash2, Edit2 } from "lucide-react";
-import { Asset, Loan } from "@/data/sampleData";
+import { Asset, Loan, Notification } from "@/data/sampleData";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -40,6 +40,8 @@ interface AdminDashboardProps {
   onEditAsset: (asset: Asset) => void;
   onDeleteAsset: (assetId: number) => void;
   onHideAsset: (assetId: number) => void;
+  notifications?: Notification[];
+  onNotificationClick?: (notificationId: string) => void;
 }
 
 const AdminDashboard = ({ 
@@ -52,7 +54,9 @@ const AdminDashboard = ({
   onAddAsset,
   onEditAsset,
   onDeleteAsset,
-  onHideAsset
+  onHideAsset,
+  notifications,
+  onNotificationClick
 }: AdminDashboardProps) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'manage' | 'assets' | 'history' | 'users'>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
@@ -192,7 +196,14 @@ const AdminDashboard = ({
 
   return (
     <div className="min-h-screen bg-background">
-      <Header userName="Admin BMN" userRole="Administrator" onLogout={onLogout} employee={null} />
+      <Header 
+        userName="Admin BMN" 
+        userRole="Administrator" 
+        onLogout={onLogout} 
+        employee={null}
+        notifications={notifications}
+        onNotificationClick={onNotificationClick}
+      />
       
       {/* Navigation Tabs */}
       <div className="border-b border-border bg-card">
