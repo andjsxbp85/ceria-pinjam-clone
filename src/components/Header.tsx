@@ -36,11 +36,6 @@ export const Header = ({ userName, userRole, onLogout, employee, notifications =
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-foreground">{userName}</p>
-              <p className="text-xs text-muted-foreground">{userRole}</p>
-            </div>
-            
             {/* Notification Icon */}
             <DropdownMenu open={isNotificationOpen} onOpenChange={setIsNotificationOpen}>
               <DropdownMenuTrigger asChild>
@@ -86,6 +81,11 @@ export const Header = ({ userName, userRole, onLogout, employee, notifications =
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+            
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-medium text-foreground">{userName}</p>
+              <p className="text-xs text-muted-foreground">{userRole}</p>
+            </div>
             
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
