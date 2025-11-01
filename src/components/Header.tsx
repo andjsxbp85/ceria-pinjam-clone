@@ -44,10 +44,10 @@ export const Header = ({ userName, userRole, onLogout, employee, notifications =
                   onMouseEnter={() => setIsNotificationOpen(true)}
                   onMouseLeave={() => setIsNotificationOpen(false)}
                 >
-                  <Bell className="h-5 w-5 text-foreground" />
+                  <Bell className="h-7 w-7 text-foreground" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {unreadCount}
+                      {unreadCount > 9 ? '9+' : String(unreadCount)}
                     </span>
                   )}
                 </div>

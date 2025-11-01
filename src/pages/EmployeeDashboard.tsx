@@ -96,7 +96,7 @@ const EmployeeDashboard = ({ employee, assets, loans, onLogout, onSubmitLoan, on
         <div className="container mx-auto px-4">
           <nav className="flex gap-6 overflow-x-auto">
             {[
-              { id: 'dashboard', label: 'Dashboard' },
+              { id: 'dashboard', label: 'Ikhtisar' },
               { id: 'assets', label: 'Daftar BMN' },
               { id: 'myLoans', label: 'Peminjaman Saya' },
             ].map((tab) => (

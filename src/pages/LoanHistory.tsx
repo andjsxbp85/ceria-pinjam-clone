@@ -54,7 +54,7 @@ export const LoanHistory = ({ loans, assets }: LoanHistoryProps) => {
             {returnedLoans.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
-                  Belum ada riwayat peminjaman
+                  Belum ada riwayat pengembalian
                 </TableCell>
               </TableRow>
             ) : (

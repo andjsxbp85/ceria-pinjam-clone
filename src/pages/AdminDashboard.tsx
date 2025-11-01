@@ -210,7 +210,7 @@ const AdminDashboard = ({
         <div className="container mx-auto px-4">
           <nav className="flex gap-6 overflow-x-auto">
             {[
-              { id: 'dashboard', label: 'Dashboard' },
+              { id: 'dashboard', label: 'Ikhtisar' },
               { id: 'assets', label: 'Daftar BMN' },
               { id: 'manage', label: 'Kelola Peminjaman' },
               { id: 'history', label: 'Riwayat Pengembalian' },
@@ -432,69 +432,6 @@ const AdminDashboard = ({
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Daftar Pegawai</h3>
-                  <div className="border rounded-lg overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>NIP</TableHead>
-                          <TableHead>Nama</TableHead>
-                          <TableHead>Unit</TableHead>
-                          <TableHead>Sub Unit</TableHead>
-                          <TableHead>Jabatan</TableHead>
-                          <TableHead>No. HP</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Tanggal Mulai</TableHead>
-                          <TableHead className="w-24">Aksi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {employeesData.map((employee) => (
-                          <TableRow key={employee.email}>
-                            <TableCell className="font-mono text-sm">{employee.nip}</TableCell>
-                            <TableCell>{employee.name}</TableCell>
-                            <TableCell className="max-w-[150px] truncate">{employee.unit}</TableCell>
-                            <TableCell className="max-w-[150px] truncate">{employee.sub_unit}</TableCell>
-                            <TableCell>{employee.position}</TableCell>
-                            <TableCell>{employee.phone}</TableCell>
-                            <TableCell>{employee.email}</TableCell>
-                            <TableCell>{employee.startDate}</TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setEditingUser(employee);
-                                    setEditingUserType('employee');
-                                    setIsEditUserOpen(true);
-                                  }}
-                                >
-                                  <Edit2 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    const index = employeesData.findIndex(emp => emp.email === employee.email);
-                                    if (index > -1) {
-                                      employeesData.splice(index, 1);
-                                      toast.success("Pegawai berhasil dihapus");
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-
-                <div>
                   <h3 className="text-lg font-semibold mb-3">Daftar Admin</h3>
                   <div className="border rounded-lg overflow-hidden">
                     <Table>
@@ -534,6 +471,69 @@ const AdminDashboard = ({
                                     }
                                   }}
                                   disabled={admin.username === 'Admin'}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Daftar Pegawai</h3>
+                  <div className="border rounded-lg overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>NIP</TableHead>
+                          <TableHead>Nama</TableHead>
+                          <TableHead>Unit</TableHead>
+                          <TableHead>Satker</TableHead>
+                          <TableHead>Jabatan</TableHead>
+                          <TableHead>No. HP</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Tanggal Join</TableHead>
+                          <TableHead className="w-24">Aksi</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {employeesData.map((employee) => (
+                          <TableRow key={employee.email}>
+                            <TableCell className="font-mono text-sm">{employee.nip}</TableCell>
+                            <TableCell>{employee.name}</TableCell>
+                            <TableCell className="max-w-[150px] truncate">{employee.unit}</TableCell>
+                            <TableCell className="max-w-[150px] truncate">{employee.sub_unit}</TableCell>
+                            <TableCell>{employee.position}</TableCell>
+                            <TableCell>{employee.phone}</TableCell>
+                            <TableCell>{employee.email}</TableCell>
+                            <TableCell>{employee.startDate}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingUser(employee);
+                                    setEditingUserType('employee');
+                                    setIsEditUserOpen(true);
+                                  }}
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const index = employeesData.findIndex(emp => emp.email === employee.email);
+                                    if (index > -1) {
+                                      employeesData.splice(index, 1);
+                                      toast.success("Pegawai berhasil dihapus");
+                                    }
+                                  }}
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>

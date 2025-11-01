@@ -1,4 +1,4 @@
-import { Package, Edit, Trash2, EyeOff, User, Eye } from "lucide-react";
+import { Package, SmilePlus, MapPin, Edit, Trash2, EyeOff, User, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "./StatusBadge";
 import { Asset, Loan } from "@/data/sampleData";
@@ -59,26 +59,29 @@ export const AssetCard = ({
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Package className="h-4 w-4" />
-          <span>{asset.category} • {asset.condition}</span>
+          <span>Kategori: {asset.category}</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Package className="h-4 w-4" />
-          <span>{asset.location}</span>
+          <SmilePlus className="h-4 w-4" />
+          <span>Kondisi: {asset.condition}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <MapPin className="h-4 w-4" />
+          <span>Lokasi: {asset.location}</span>
         </div>
       </div>
-      
-      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{asset.description}</p>
       
       {/* Pengguna field */}
       <div className="mb-4">
         <div className="flex items-center gap-2 text-sm">
           <User className="h-4 w-4 text-muted-foreground" />
           <div>
-            <p className="text-xs text-muted-foreground">Pengguna</p>
-            <p className="font-medium text-foreground">{asset.currentUser || '-'}</p>
+            <p className="text-xs text-muted-foreground">Pengguna: {asset.currentUser || '-'}</p>
           </div>
         </div>
       </div>
+
+      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{asset.description}</p>
       
       {borrowerInfo && asset.status === 'Dipinjam' && (
         <div className="bg-muted/50 rounded-lg p-3 mb-4">
