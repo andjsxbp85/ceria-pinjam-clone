@@ -179,7 +179,14 @@ const rawAssets = [
 
 export const assets: Asset[] = rawAssets.map(a => {
   const { cleanDesc, user } = extractUser(a.description);
-  return { ...a, description: cleanDesc, currentUser: user, status: a.status as Asset['status'] };
+  const asset: any = { ...a };
+  return { 
+    ...asset, 
+    description: cleanDesc, 
+    currentUser: user, 
+    status: asset.status as Asset['status'],
+    imageUrls: asset.imageUrls ? [...asset.imageUrls] : undefined
+  };
 });
 
 export const initialLoans: Loan[] = [
